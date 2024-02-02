@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <title>HTML5-Videoplayer</title>
+  <meta name="author" content="Thomas Dittmar">
+  <link rel="stylesheet" href="css/videoplayer.css" type="text/css">
+  <link rel="icon" href="Symbole/plist2.png">
+
+  <script src="js/jq2.js"></script>
+  <script src="js/videoplayer.js"></script>
+  <style></style>
+</head>
+
+<body style='background:#151515; font-family:arial;'>
+  <table align="center" style="width: 80%; background: rgb(21, 21, 21);">
+    <tbody>
+      <tr align="center">
+        <td
+          style="height: 50px; width: 33.3333%; background: rgb(21, 21, 21); font-weight: bold; font-family: Arial; font-size: 20px; color: rgb(255, 255, 255);"
+          >VideoPlayer-Plugin<br></td>
+      </tr>
+      <tr>
+        <td style="height: 25px; width: 33.3333%; background: rgb(66, 66, 66);"><br></td>
+      </tr>
+      <tr align="center">
+        <td style="height: 25px; width: 33.3333%; background: rgb(66, 66, 66);">
+          <div style="width: 1280px; height: 720px; background: navy;" id="player"><br></div>
+        </td>
+      </tr>
+      <tr align="center">
+        <td style="height: 30px; font-size: 20px; font-weight: bold; background: grey; color: black; width: 33.3333%;"
+          ><input type="text" class="elementselect"
+            style="background: navy; color: rgb(255, 255, 255); font-weight: bold; font-family: Arial; font-size: 16px; width: 350px; border-radius: 6px;"
+            id="vidUrl">&nbsp;<input type="text" class="elementselect"
+            style="background: navy; color: rgb(255, 255, 255); font-weight: bold; font-family: Arial; font-size: 16px; width: 350px; border-radius: 6px;"
+            id="vidPath" value="file:///C:/Users/sonvt/Videos/">&nbsp; <input type="file" id="file">
+          <button
+            style="background: rgb(21, 21, 21); color: rgb(255, 255, 255); font-weight: bold; font-family: Arial; font-size: 20px; border-radius: 6px;"
+            id="button2"><img src="Symbole/open.png" style="width:16px; height:16px;">&nbsp;Load File</button>&nbsp;
+          <button
+            style="background: rgb(21, 21, 21); color: rgb(255, 255, 255); font-weight: bold; font-family: Arial; font-size: 20px; border-radius: 6px;"
+            id="button1">Change Video</button>&nbsp; </td>
+      </tr>
+    </tbody>
+  </table>&nbsp;
+  <script>$(document).ready(function () {
+      $("#player").videoPlayer();
+
+      $("#button1").on("click", function () {
+        var pathName = $("#vidPath").val();
+        var vidName = $("#vidUrl").val();
+        $("#player").videoPlayer({ "path": pathName, "source": vidName });
+      });
+
+      $("#button2").on("click", function () {
+        $("#file").click();
+      });
+
+      $("#file").on("change", function (e) {
+        var file = e.currentTarget.files[0];
+        $("#vidUrl").val(file.name.substring(0, file.name.lastIndexOf(".")));
+      });
+    });
+  </script>
+</body>
+
+</html>
