@@ -13,10 +13,15 @@ this feature is a HTML5-Videoplayer-Plugin
     "pitch": false,
     "playbackRate": 1,
     "controls": false,
-    "muted": false
+    "muted": false,
+    "movies": []
   		}, options);
     
   var video = $("<video/>");
+    video.css({
+      "background": "#151515"
+    });
+    
   video.prop("preservesPitch", settings.pitch);
   video.attr("src",settings.path +""+ settings.source + "" + settings.extension);
   video.css("width","100%");
@@ -65,8 +70,24 @@ this feature is a HTML5-Videoplayer-Plugin
   
   var forwBtn = $("<button class='toolbuttons'>&raquo;</button>");
   forwBtn.appendTo(toolbar);
+    
+  var skiprewBtn = $("<button class='toolbuttons'>|&laquo;</button>");
+  skiprewBtn.css({
+    "background": "#202100",
+    "border-color": "#202100",
+    "display": "none"
+  });
+  skiprewBtn.appendTo(toolbar);
   
-  var timeTools = $("<table class='timerBox'><tr><td class='time1' id='searchtime'><p id='progtime' class='progtime'></td><td class='time2' id='playtime'>0:00 / 0:00</td></tr></table>");
+  var skipforwBtn = $("<button class='toolbuttons'>&raquo;|</button>");
+  skipforwBtn.css({
+    "background": "#202100",
+    "border-color": "#202100",
+    "display": "none"
+  });
+  skipforwBtn.appendTo(toolbar);
+  
+  var timeTools = $("<div class='timerBox'><div class='time1' id='searchtime'><div id='progtime' class='progtime'></div></div><div class='time2' id='playtime'>0:00 / 0:00</div></table>");
   timeTools.appendTo(toolbar);
   
   $("#playBtn").on("click", function() {
@@ -247,7 +268,9 @@ this feature is a HTML5-Videoplayer-Plugin
     rMin = (rMin < 10 ? "0"+rMin : rMin);
     rSec = (rSec < 10 ? "0"+rSec : rSec);
    
-    $("#playtime").html(vHour + ":" + vMin + ":" + vSec + " / " + rHour + ":" + rMin + ":" + rSec);
+    if (total > 0) {
+      $("#playtime").html(vHour + ":" + vMin + ":" + vSec + " / " + rHour + ":" + rMin + ":" + rSec);
+    }
   }
   
   function setProgress() {
@@ -255,7 +278,9 @@ this feature is a HTML5-Videoplayer-Plugin
   	var timeStamp = video.prop("currentTime");
     var progress = timeStamp/total*100;
     
-    $("#progtime").css("width",progress+"%");
+    if (total > 0) {
+      $("#progtime").css("width",progress+"%");
+    }
   }
   
   video.on("timeupdate", function() {
@@ -273,7 +298,9 @@ this feature is a HTML5-Videoplayer-Plugin
     var barPos = e.offsetX;
     var videoPos = barPos/barSize*total;
     
-    video.prop("currentTime",videoPos);
+    if (total > 0) {
+      video.prop("currentTime",videoPos);
+    }
   }
   
   function showItems(e) {
@@ -305,9 +332,16 @@ this feature is a HTML5-Videoplayer-Plugin
     rePrevMin = (rePrevMin < 10 ? "0"+rePrevMin : rePrevMin);
     rePrevSec = (rePrevSec < 10 ? "0"+rePrevSec : rePrevSec);
     
-    $("#progtime").css("height","12px");
-    miniPlayer.animate({left: minPlPos+"px", top: minVertPos+"px"},10).prop("currentTime",videoPos).show();
-    prevTime.animate({left: prevPos+"px", top: prevVertPos+"px"},10).html(forwPrevHour + ":" + forwPrevMin + ":" + forwPrevSec + " / " + rePrevHour + ":" + rePrevMin + ":" + rePrevSec).show();
+    if (total > 0) {
+      prevTime.html(forwPrevHour + ":" + forwPrevMin + ":" + forwPrevSec + " / " + rePrevHour + ":" + rePrevMin + ":" + rePrevSec);
+      miniPlayer.prop("currentTime",videoPos);
+    } else {
+      prevTime.html("No Video Load!");
+    }
+    
+    $("#progtime").css({"height":"12px", "margin-top":"4px"});
+    miniPlayer.animate({left: minPlPos+"px", top: minVertPos+"px"},10).show();
+    prevTime.animate({left: prevPos+"px", top: prevVertPos+"px"},10).show();
   }
   
   $("#searchtime").on("click",moveProgress);
@@ -315,7 +349,7 @@ this feature is a HTML5-Videoplayer-Plugin
   $("#searchtime").on("mousemove", showItems);
   
   $("#searchtime").on("mouseleave", function() {
-    $("#progtime").css("height","6px");
+    $("#progtime").css({"height":"6px", "margin-top":"6px"});
     miniPlayer.hide();
     prevTime.hide();
   });
@@ -377,6 +411,16 @@ this feature is a HTML5-Videoplayer-Plugin
     var volVal = $(this).val();
     video.prop("volume", volVal);
     infoBox.text("Volume: " + volVal*100 + "%");
+  });
+
+  volumer.on("mousedown", function() {
+    $(this).on("mousemove", function() {
+      $(this).trigger("change");
+    });
+  });
+  
+  volumer.on("mouseup", function() {
+    $(this).off("mousemove");
   });
   
   var toggleVolume = $("<button class='toolbuttons' id='togglemute'><img src='Symbole/volume.png' style='filter:invert(100%)'></button>");
@@ -454,7 +498,7 @@ this feature is a HTML5-Videoplayer-Plugin
   var settingsMod = $("<div/>");
   settingsMod.css({
     "width": this.width(),
-    "height": "100px",
+    "height": "400px",
     "background": "rgba(15, 15, 15, 0.8)",
     "position": "absolute",
     "left": tbPos.left,
@@ -608,10 +652,10 @@ this feature is a HTML5-Videoplayer-Plugin
       vidWidth.val(1);
       vidHeight.val(1);
     } else if (radSel === "1") {
-      vidWidth.val(1.32);
+      vidWidth.val(1.41);
       vidHeight.val(1);
     } else if (radSel === "2") {
-      vidWidth.val(1.32);
+      vidWidth.val(1.41);
       vidHeight.val(1.21);
     } else if (radSel === "3") {
       vidWidth.val(1.21);
@@ -644,6 +688,466 @@ this feature is a HTML5-Videoplayer-Plugin
     
     if (fscControl) {
       video.css("transform", "scale("+scaleWidth+", "+scaleHeight+")");
+    }
+  });
+    
+    var playlistHead = $("<div/>");
+  	playlistHead.css({
+    "width": "100%",
+    "height": "30px",
+    "font-size": "25px",
+    "font-weight": "bold",
+    "color": "white",
+    "text-align": "center"
+  	}).text("Player-Mode");
+    
+    var playerMode = $("<div/>");
+    playerMode.css({
+    "width": "100%",
+    "height": "80px",
+    "font-size": "25px",
+    "font-weight": "bold",
+    "color": "white",
+    "text-align": "center",
+    "padding": "16px",
+    "display": "flex",
+    "vertical-direction": "row"
+  });
+    
+    playlistHead.appendTo(settingsMod);
+    playerMode.appendTo(settingsMod);
+    
+    var mode1 = $("<input type='radio' id='mode1' name='pMod' style='display:none;' checked/>");
+    mode1.appendTo(playerMode);
+    var label1 = $("<label for='mode1'>Standard-Mode</label>");
+    label1.css({
+      "background": "linear-gradient(to right, navy, skyblue, navy)",
+      "border": "4px inset skyblue",
+      "border-radius": "6px",
+      "font-size": "25px",
+      "font-weight": "bold",
+      "color": "white",
+      "width": "350px",
+      "height": "35px",
+      "margin-left": "16px",
+      "padding": "4px"
+    });
+    label1.appendTo(playerMode);
+    
+    var mode2 = $("<input type='radio' id='mode2' name='pMod' style='display:none;'/>");
+    mode2.appendTo(playerMode);
+    var label2 = $("<label for='mode2'>Playlist-Mode</label>");
+    label2.css({
+      "background": "#000029",
+      "border": "4px outset #000029",
+      "border-radius": "6px",
+      "font-size": "25px",
+      "font-weight": "bold",
+      "color": "white",
+      "width": "350px",
+      "height": "35px",
+      "margin-left": "16px",
+      "padding": "4px"
+    });
+    label2.appendTo(playerMode);
+    
+    var mode3 = $("<input type='radio' id='mode3' name='pMod' style='display:none;'/>");
+    mode3.appendTo(playerMode);
+    var label3 = $("<label for='mode3'>Loop-Mode</label>");
+    label3.css({
+      "background": "#000029",
+      "border": "4px outset #000029",
+      "border-radius": "6px",
+      "font-size": "25px",
+      "font-weight": "bold",
+      "color": "white",
+      "width": "350px",
+      "height": "35px",
+      "margin-left": "16px",
+      "padding": "4px"
+    });
+    label3.appendTo(playerMode);
+    
+    video.on("playing", function() {
+      $("#playBtn").css({
+        "background": "linear-gradient(to right, navy, skyblue, navy)",
+        "border-style": "inset",
+        "border-color": "skyblue"
+      }).html("||");
+    });
+        
+    var currentVideo = 0;
+        
+    var playlistHead2 = $("<div/>");
+  	playlistHead2.css({
+    "width": "100%",
+    "height": "30px",
+    "font-size": "25px",
+    "font-weight": "bold",
+    "color": "white",
+    "text-align": "center",
+    "display": "none"
+  	}).text("Playlist-Mode");
+    
+    var playlistMode = $("<div/>");
+    playlistMode.css({
+    "width": "100%",
+    "height": "80px",
+    "font-size": "25px",
+    "font-weight": "bold",
+    "color": "white",
+    "text-align": "center",
+    "padding": "16px",
+    "display": "none",
+    "vertical-direction": "row"
+  });
+    
+    playlistHead2.appendTo(settingsMod);
+    playlistMode.appendTo(settingsMod);
+    
+    mode1.on("change", function() {
+      var plMode1 = $(this);
+      
+      if (plMode1.is(":checked")) {
+        label1.css({
+          "background": "linear-gradient(to right, navy, skyblue, navy)",
+          "border-style": "inset",
+          "border-color": "skyblue"
+        });
+        
+        label2.css({
+          "background": "#000029",
+          "border-style": "outset",
+          "border-color": "#000029"
+        });
+        
+        label3.css({
+          "background": "#000029",
+          "border-style": "outset",
+          "border-color": "#000029"
+        });
+        
+        playlistHead2.hide();
+        playlistMode.hide();
+		video.removeAttr("autoplay").removeAttr("loop");
+        skiprewBtn.hide();
+        skipforwBtn.hide();
+        infoBox.css("width", "150px");
+      }
+    });
+    
+    mode2.on("change", function() {
+      var plMode2 = $(this);
+      
+      if (plMode2.is(":checked")) {
+        label2.css({
+          "background": "linear-gradient(to right, navy, skyblue, navy)",
+          "border-style": "inset",
+          "border-color": "skyblue"
+        });
+        
+        label1.css({
+          "background": "#000029",
+          "border-style": "outset",
+          "border-color": "#000029"
+        });
+        
+        label3.css({
+          "background": "#000029",
+          "border-style": "outset",
+          "border-color": "#000029"
+        });
+        
+        playlistHead2.show();
+        playlistMode.show().css("display", "flex");
+		video.removeAttr("loop");
+        skiprewBtn.show();
+        skipforwBtn.show();
+      }
+    });
+    
+    mode3.on("change", function() {
+      var plMode3 = $(this);
+      
+      if (plMode3.is(":checked")) {
+        label3.css({
+          "background": "linear-gradient(to right, navy, skyblue, navy)",
+          "border-style": "inset",
+          "border-color": "skyblue"
+        });
+        
+        label1.css({
+          "background": "#000029",
+          "border-style": "outset",
+          "border-color": "#000029"
+        });
+        
+        label2.css({
+          "background": "#000029",
+          "border-style": "outset",
+          "border-color": "#000029"
+        });
+        
+        playlistHead2.hide();
+        playlistMode.hide();
+        skiprewBtn.hide();
+        skipforwBtn.hide();
+        infoBox.css("width", "150px");
+      }
+    });
+    
+    var mode11 = $("<input type='radio' id='mode11' name='pMod2' style='display:none;' checked/>");
+    mode11.appendTo(playlistMode);
+    var label11 = $("<label for='mode11'>Forward</label>");
+    label11.css({
+      "background": "linear-gradient(to right, green, lime, green)",
+      "border": "4px inset lime",
+      "border-radius": "6px",
+      "font-size": "25px",
+      "font-weight": "bold",
+      "color": "white",
+      "width": "350px",
+      "height": "35px",
+      "margin-left": "16px",
+      "padding": "4px"
+    });
+    label11.appendTo(playlistMode);
+    
+    var mode12 = $("<input type='radio' id='mode12' name='pMod2' style='display:none;'/>");
+    mode12.appendTo(playlistMode);
+    var label12 = $("<label for='mode12'>Reverse</label>");
+    label12.css({
+      "background": "#002500",
+      "border": "4px outset #002500",
+      "border-radius": "6px",
+      "font-size": "25px",
+      "font-weight": "bold",
+      "color": "white",
+      "width": "350px",
+      "height": "35px",
+      "margin-left": "16px",
+      "padding": "4px"
+    });
+    label12.appendTo(playlistMode);
+    
+    var mode13 = $("<input type='radio' id='mode13' name='pMod2' style='display:none;'/>");
+    mode13.appendTo(playlistMode);
+    var label13 = $("<label for='mode13'>Random</label>");
+    label13.css({
+      "background": "#002500",
+      "border": "4px outset #002500",
+      "border-radius": "6px",
+      "font-size": "25px",
+      "font-weight": "bold",
+      "color": "white",
+      "width": "350px",
+      "height": "35px",
+      "margin-left": "16px",
+      "padding": "4px"
+    });
+    label13.appendTo(playlistMode);
+    
+    mode11.on("change", function() {
+      var plMode11 = $(this);
+      
+      if (plMode11.is(":checked")) {
+        label11.css({
+          "background": "linear-gradient(to right, green, lime, green)",
+          "border-style": "inset",
+          "border-color": "lime"
+        });
+        
+        label12.css({
+          "background": "#002500",
+          "border-style": "outset",
+          "border-color": "#002500"
+        });
+        
+        label13.css({
+          "background": "#002500",
+          "border-style": "outset",
+          "border-color": "#002500"
+        });
+      }
+    });
+    
+    mode12.on("change", function() {
+      var plMode12 = $(this);
+      
+      if (plMode12.is(":checked")) {
+        label12.css({
+          "background": "linear-gradient(to right, green, lime, green)",
+          "border-style": "inset",
+          "border-color": "lime"
+        });
+        
+        label11.css({
+          "background": "#002500",
+          "border-style": "outset",
+          "border-color": "#002500"
+        });
+        
+        label13.css({
+          "background": "#002500",
+          "border-style": "outset",
+          "border-color": "#002500"
+        });
+      }
+    });
+    
+    mode13.on("change", function() {
+      var plMode13 = $(this);
+      
+      if (plMode13.is(":checked")) {
+        label13.css({
+          "background": "linear-gradient(to right, green, lime, green)",
+          "border-style": "inset",
+          "border-color": "lime"
+        });
+        
+        label11.css({
+          "background": "#002500",
+          "border-style": "outset",
+          "border-color": "#002500"
+        });
+        
+        label12.css({
+          "background": "#002500",
+          "border-style": "outset",
+          "border-color": "#002500"
+        });
+      }
+    });
+    
+    function vidForward() {
+      var pitchRate = pitchers.val();
+      currentVideo++;
+      if (currentVideo == settings.movies.length) {
+        currentVideo = 0;
+      }
+      
+      video.attr("src", settings.path+settings.movies[currentVideo]+settings.extension);
+      miniPlayer.attr("src", settings.path+settings.movies[currentVideo]+settings.extension);
+      video.prop("playbackRate", pitchRate);
+    }
+    
+    function vidReverse() {
+      var pitchRate = pitchers.val();
+      currentVideo--;
+      if (currentVideo == -1) {
+        currentVideo = settings.movies.length - 1;
+      }
+      
+      video.attr("src", settings.path+settings.movies[currentVideo]+settings.extension);
+      miniPlayer.attr("src", settings.path+settings.movies[currentVideo]+settings.extension);
+      video.prop("playbackRate", pitchRate);
+    }
+    
+    var random;
+    
+    function setRandom() {
+      random = [];
+      
+      for (var i=0; i<settings.movies.length; i++) {
+        random.push(settings.movies[i]);
+      }
+      
+    }
+    
+    setRandom();
+    
+    function playRandom() {
+      var pitchRate = pitchers.val();
+      var randSize = random.length;
+      var randNumber = Math.floor(Math.random()*randSize);
+      video.attr("src", settings.path+random[randNumber]+settings.extension);
+      miniPlayer.attr("src", settings.path+random[randNumber]+settings.extension);
+      video.prop("playbackRate", pitchRate);
+      random.splice(randNumber,1);
+      
+      if (randSize < 2) {
+        setRandom();
+      }
+    }
+    
+    video.on("ended", function() {
+      if (mode2.is(":checked")) {
+        video.attr({"autoplay":true, "loop":false});
+        if (mode11.is(":checked")) {
+          vidForward();
+        } else if (mode12.is(":checked")) {
+          vidReverse();
+        } else if (mode13.is(":checked")) {
+          playRandom();
+        }
+      } else if (mode3.is(":checked")) {
+        video.attr({"autoplay":true, "loop":true});
+      } else if (mode1.is(":checked")) {
+        video.removeAttr("autoplay").removeAttr("loop");
+      }
+    });
+    
+  skiprewBtn.on("mouseenter", function() {
+    if (mode13.is(":checked")) {
+      infoBox.css("width", "250px");
+      showTitle("Random-Mode Active!");
+    } else {
+      showTitle("Video Reverse");
+      infoBox.css("width", "150px");
+    }
+  });
+  
+  skipforwBtn.on("mouseenter", function() {
+    if (mode13.is(":checked")) {
+      infoBox.css("width", "250px");
+      showTitle("Random-Mode Active!");
+    } else {
+      showTitle("Video Forward");
+      infoBox.css("width", "150px");
+    }
+  });
+  
+  skiprewBtn.on("mousemove", function(e) {
+    var xPos = e.pageX;
+    var yPos = e.pageY;
+    var infoWidth = infoBox.width();
+    var infoPos = infoWidth/2;
+    
+    infoBox.animate({left: xPos - infoPos, top: yPos - 60},6).show(100);
+  });
+  
+  skipforwBtn.on("mousemove", function(e) {
+    var xPos = e.pageX;
+    var yPos = e.pageY;
+    var infoWidth = infoBox.width();
+    var infoPos = infoWidth/2;
+    
+    infoBox.animate({left: xPos - infoPos, top: yPos - 60},6).show(100);
+  });
+  
+  skiprewBtn.on("mouseleave", function() {
+    infoBox.hide(50);
+    infoBox.css("width", "150px");
+  });
+  
+  skipforwBtn.on("mouseleave", function() {
+    infoBox.hide(50);
+    infoBox.css("width", "150px");
+  });
+    
+  skiprewBtn.on("click", function() {
+    if (mode13.is(":checked")) {
+      playRandom();
+    } else {
+      vidReverse();
+    }
+  });
+    
+    skipforwBtn.on("click", function() {
+    if (mode13.is(":checked")) {
+      playRandom();
+    } else {
+      vidForward();
     }
   });
   
@@ -712,7 +1216,428 @@ this feature is a HTML5-Videoplayer-Plugin
   fullScreen.on("mouseleave", function() {
     infoBox.hide(60);
   });
-  
+    
+    var conMenu = $("<div id='menu'></div>");
+    
+    conMenu.css({
+      "width": "300px",
+      "background": "rgba(21, 21, 21, 0.8)",
+      "position": "absolute",
+      "left": "10px",
+      "top": "10px",
+      "z-index": 100,
+      "border": "2px outset #303030",
+      "display": "none"
+    });
+    
+    conMenu.appendTo(this);
+    
+    var menuList = $("<ul/>");
+    menuList.css({
+      "margin": "1px",
+      "padding": "1px",
+      "list-style": "none",
+      "font-size": "20px",
+      "font-weight": "bold",
+      "color": "white",
+      "text-align": "left",
+    });
+    
+    menuList.appendTo(conMenu);
+    
+    var listPoint1 = $("<li style='border-bottom: 1px solid rgba(255, 255, 255, 0.6)'>&#9654;/|| Play/Pause</li>");
+    listPoint1.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer"
+    });
+    
+    listPoint1.appendTo(menuList);
+    
+    var listPoint2 = $("<li style='border-bottom: 1px solid rgba(255, 255, 255, 0.6)'>Toggle Mute</li>");
+    listPoint2.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer"
+    });
+    
+    listPoint2.appendTo(menuList);
+    
+    var listPoint3 = $("<li style='border-bottom: 1px solid rgba(255, 255, 255, 0.6)'>Standard-Mode</li>");
+    listPoint3.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer"
+    });
+    
+    listPoint3.appendTo(menuList);
+    
+    var listPoint4 = $("<li style='border-bottom: 1px solid rgba(255, 255, 255, 0.6)'>Playlist-Mode</li>");
+    listPoint4.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer"
+    });
+    
+    listPoint4.appendTo(menuList);
+    
+    var listPoint5 = $("<li style='border-bottom: 1px solid rgba(255, 255, 255, 0.6)'>Loop-Mode</li>");
+    listPoint5.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer"
+    });
+    
+    listPoint5.appendTo(menuList);
+    
+    var listPoint6 = $("<li style='border-bottom: 1px solid rgba(255, 255, 255, 0.6)'>|&laquo; Video Reverse</li>");
+    listPoint6.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer",
+      "display": "none"
+    });
+    
+    listPoint6.appendTo(menuList);
+    
+    var listPoint7 = $("<li style='border-bottom: 1px solid rgba(255, 255, 255, 0.6)'>&raquo;| Video Forward</li>");
+    listPoint7.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer",
+      "display": "none"
+    });
+    
+    listPoint7.appendTo(menuList);
+    
+    var listPoint8 = $("<li style='border-bottom: 1px solid rgba(255, 255, 255, 0.6)'>Settings...</li>");
+    listPoint8.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer"
+    });
+    
+    listPoint8.appendTo(menuList);
+    
+    var listPoint9 = $("<li>Toggle Fullscreen</li>");
+    listPoint9.css({
+      "padding-top": "12px",
+      "padding-bottom": "12px",
+      "cursor": "pointer"
+    });
+    
+    listPoint9.appendTo(menuList);
+    
+    video.on("click", function() {
+      $("#playBtn").click();
+      conMenu.hide();
+    });
+    
+    video.on("contextmenu", function(e) {
+      var scW = window.screen.availWidth;
+      var scH = window.screen.availHeight;
+      var menuX = e.pageX;
+      var menuY = e.pageY;
+      var menSizeX = conMenu.width();
+      var menSizeY = conMenu.height();
+      var menuPoxX = menuX + menSizeX;
+      var menuPosY = menuY + menSizeY;
+      
+      if (menuPoxX > scW && menuPosY < scH) {
+        conMenu.animate({left: menuX - menSizeX, top: menuY},6).show();
+      } else if (menuPosY > scH && menuPoxX < scW) {
+        conMenu.animate({left: menuX, top: menuY - menSizeY},6).show();
+      } else if (menuPosY > scH && menuPoxX > scW) {
+        conMenu.animate({left: menuX - menSizeX, top: menuY - menSizeY},6).show();
+      } else {
+        conMenu.animate({left: menuX, top: menuY},6).show();
+      }
+      
+      e.preventDefault();
+    });
+    
+    listPoint1.on("click", function() {
+      $("#playBtn").click();
+      conMenu.hide();
+    });
+    
+    listPoint2.on("click", function() {
+      toggleVolume.click();
+      conMenu.hide();
+    });
+    
+    listPoint3.on("click", function() {
+      listPoint6.hide();
+      listPoint7.hide();
+      mode1.trigger("click");
+      listPoint4.show();
+      conMenu.hide();
+    });
+    
+    listPoint4.on("click", function() {
+      listPoint6.show();
+      listPoint7.show();
+      mode2.trigger("click");
+      listPoint4.hide();
+      conMenu.hide();
+    });
+    
+    listPoint5.on("click", function() {
+      listPoint6.hide();
+      listPoint7.hide();
+      mode3.trigger("click");
+      listPoint4.show();
+      conMenu.hide();
+    });
+    
+    listPoint6.on("click", function() {
+      vidReverse();
+      conMenu.hide();
+    });
+    
+    listPoint7.on("click", function() {
+      vidForward();
+      conMenu.hide();
+    });
+    
+    listPoint8.on("click", function() {
+      settingBtn.click();
+      conMenu.hide();
+    });
+    
+    listPoint9.on("click", function() {
+      fullScreen.click();
+      conMenu.hide();
+    });
+    
+    $("#menu li").on("mouseenter", function() {
+      $(this).css("background","#009aff");
+    });
+    
+    $("#menu li").on("mouseleave", function() {
+      $(this).css("background","none");
+    });
+    
+    $("#menu li").on("contextmenu", function(e) {
+      $(this).click();
+      e.preventDefault();
+    });
+    
+    $("#pauseBtn").on("mousedown", function() {
+      $(this).css({
+        "background": "linear-gradient(to right, navy, skyblue, navy)",
+        "border-style": "inset",
+        "border-color": "skyblue"
+      });
+    });
+    
+    $("#pauseBtn").on("mouseup", function() {
+      $(this).css({
+        "background": "#000029",
+        "border-style": "outset",
+        "border-color": "#000029"
+      });
+    });
+    
+    rewBtn.on("mousedown", function() {
+      $(this).css({
+        "background": "linear-gradient(to right, navy, skyblue, navy)",
+        "border-style": "inset",
+        "border-color": "skyblue"
+      });
+    });
+    
+    rewBtn.on("mouseup", function() {
+      $(this).css({
+        "background": "#000029",
+        "border-style": "outset",
+        "border-color": "#000029"
+      });
+    });
+    
+    forwBtn.on("mousedown", function() {
+      $(this).css({
+        "background": "linear-gradient(to right, navy, skyblue, navy)",
+        "border-style": "inset",
+        "border-color": "skyblue"
+      });
+    });
+    
+    forwBtn.on("mouseup", function() {
+      $(this).css({
+        "background": "#000029",
+        "border-style": "outset",
+        "border-color": "#000029"
+      });
+    });
+    
+    toggleVolume.on("mousedown", function() {
+      $(this).css({
+        "background": "linear-gradient(to right, navy, skyblue, navy)",
+        "border-style": "inset",
+        "border-color": "skyblue"
+      });
+    });
+    
+    toggleVolume.on("mouseup", function() {
+      $(this).css({
+        "background": "#000029",
+        "border-style": "outset",
+        "border-color": "#000029"
+      });
+    });
+    
+    settingBtn.on("mousedown", function() {
+      $(this).css({
+        "background": "linear-gradient(to right, darkred, red, darkred)",
+        "border-style": "inset",
+        "border-color": "red"
+      });
+    });
+    
+    settingBtn.on("mouseup", function() {
+      $(this).css({
+        "background": "#290000",
+        "border-style": "outset",
+        "border-color": "#290000"
+      });
+    });
+    
+    skiprewBtn.on("mousedown", function() {
+      $(this).css({
+        "background": "linear-gradient(to right, #5b5d00, yellow, #5b5d00)",
+        "border-style": "inset",
+        "border-color": "yellow"
+      });
+    });
+    
+    skiprewBtn.on("mouseup", function() {
+      $(this).css({
+        "background": "#292900",
+        "border-style": "outset",
+        "border-color": "#292900"
+      });
+    });
+    
+    skipforwBtn.on("mousedown", function() {
+      $(this).css({
+        "background": "linear-gradient(to right, #5b5d00, yellow, #5b5d00)",
+        "border-style": "inset",
+        "border-color": "yellow"
+      });
+    });
+    
+    skipforwBtn.on("mouseup", function() {
+      $(this).css({
+        "background": "#292900",
+        "border-style": "outset",
+        "border-color": "#292900"
+      });
+    });
+
+    var closeMenu;
+
+    conMenu.on("mouseenter", function() {
+	clearTimeout(closeMenu);
+    });
+
+    conMenu.on("mouseleave", function() {
+	closeMenu = setTimeout(function() {
+	   conMenu.hide();
+	},2000);	
+    });
+
+    toolbar.on("mouseenter", function() {
+	clearTimeout(showTool);
+    });
+    
+    var movieMenu = $("<div/>");
+    movieMenu.css({
+      "width": "450px",
+      "max-height": "350px",
+      "background": "rgba(30, 30, 30, 0.6)",
+      "position": "absolute",
+      "display": "none",
+      "overflow": "auto",
+      "z-index": 1000
+    });
+    
+    movieMenu.appendTo(this);
+    
+    var movieList = $("<ul id='movieItem'></ul>");
+    movieList.css({
+      "font-size": "16px",
+      "font-weight": "bold",
+      "color": "white",
+      "margin": "1px",
+      "padding": "1px",
+      "list-style": "none",
+      "text-align": "left"
+    });
+    
+    movieList.appendTo(movieMenu);
+    
+    var addMovies = [];
+    for (var j=0; j<settings.movies.length; j++) {
+      addMovies.push("<li style='border-bottom: 1px solid rgba(250, 250, 250, 0.6); padding-top:12px; padding-bottom:12px; cursor:pointer;'>"+settings.movies[j]+"</li>");
+    }
+    
+    movieList.html(addMovies.join(""));
+    
+    skiprewBtn.on("contextmenu", function(e) {
+      var moviePosX = e.pageX - movieMenu.width()/2;
+      var moviePosY = e.pageY - movieMenu.height() - toolbar.height() - 12;
+      
+      movieMenu.animate({left: moviePosX, top: moviePosY},1).show();
+      e.preventDefault();
+    });
+    
+    skipforwBtn.on("contextmenu", function(e) {
+      var moviePosX = e.pageX - movieMenu.width()/2;
+      var moviePosY = e.pageY - movieMenu.height() - toolbar.height() - 12;
+      
+      movieMenu.animate({left: moviePosX, top: moviePosY},1).show();
+      e.preventDefault();
+    });
+    
+    $("#movieItem li").on("click", function() {
+      var movieNumber = $(this).index();
+      var movieCont = $(this).text();
+      var pitchRate = pitchers.val();
+      
+      video.attr("src", settings.path+movieCont+settings.extension);
+      miniPlayer.attr("src", settings.path+movieCont+settings.extension);
+      video.prop("playbackRate", pitchRate);
+      currentVideo = movieNumber;
+      movieMenu.hide();
+      console.log(video.attr("src"));
+    });
+    
+    $("#movieItem li").on("mouseenter", function() {
+      $(this).css("background", "#00baff");
+    });
+    
+    $("#movieItem li").on("mouseleave", function() {
+      $(this).css("background", "none");
+    });
+    
+    $("#movieItem li").on("contextmenu", function(e) {
+      $(this).click();
+      e.preventDefault();
+    });
+    
+    var closeMovieMenu;
+
+    movieMenu.on("mouseenter", function() {
+	clearTimeout(closeMovieMenu);
+    });
+
+    movieMenu.on("mouseleave", function() {
+	closeMovieMenu = setTimeout(function() {
+	   movieMenu.hide();
+	},1000);	
+    });
+      
   return this;
 	};
   
