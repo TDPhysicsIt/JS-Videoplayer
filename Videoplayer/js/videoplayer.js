@@ -14,7 +14,7 @@ this feature is a HTML5-Videoplayer-Plugin
     "playbackRate": 1,
     "controls": false,
     "muted": false,
-    "movies": ["Hauptsache Ferien", "Die Supernasen", "Zärtliche Chaoten", "Die Lümmel von der ersten Bank - Betragen ungenügend", "Blau blüht der Enzian", "Musik Musik da wackelt die Penne"],
+    "movies": [],
     "fxSounds": ["vbge1.ogg", "vbge2.ogg", "vbge3.ogg", "vbge4.ogg", "vbge5.ogg", "vbge6.ogg", "vbge7.ogg", "vbge8.ogg", "vbge9.ogg", "vbge10.ogg"]
   		}, options);
     
